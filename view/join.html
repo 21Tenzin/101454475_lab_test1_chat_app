@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Chat Room</title>
+</head>
+<body>
+    <h2>Join a Chat Room</h2>
+    <form id="roomForm">
+        <label for="room">Select a Room:</label>
+        <select name="room" id="room">
+            <option value="devops">DevOps</option>
+            <option value="cloud computing">Cloud Computing</option>
+            <option value="covid19">Covid19</option>
+            <option value="sports">Sports</option>
+            <option value="nodeJS">NodeJS</option>
+        </select>
+        <button type="submit">Join Room</button>
+    </form>
+
+    <button id="logoutBtn">Logout</button>
+
+    <script>
+        document.getElementById('roomForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const room = document.getElementById('room').value;
+            localStorage.setItem('room', room);
+            window.location.href = "/chat.html";  
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.clear();
+            window.location.href = "/login.html";
+        });
+
+    </script>
+</body>
+</html>

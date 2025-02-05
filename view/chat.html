@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chat Room</title>
+    <script src="/socket.io/socket.io.js"></script> 
+</head>
+<body>
+    <h2 id="roomTitle"></h2>
+    <div id="chatBox"></div>
+    
+    <form id="chatForm">
+        <input type="text" id="message" placeholder="Type a message..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <p id="typingIndicator" style="color: gray; font-style: italic"></p>
+
+    <button onclick="leaveRoom()">Leave Room</button>
+    <button id="logoutBtn">Logout</button>
+
+    <script>
+        const socket = io();
+        const room = localStorage.getItem('room');
+        const username = localStorage.getItem('username');
+        const typingIndicator = document.getElementById("typingIndicator");
+    
+        if (!room || !username) {
+            window.location.href = "/join.html"; 
+        }
+    
+        document.getElementById("roomTitle").innerText = "Chat Room: " + room;
+    
+        socket.emit('joinRoom', { username, room });
+
+        let typingTimeout;
+
+        // Typing event listener
+        document.getElementById('message').addEventListener('input', function () {
+            socket.emit('typing', { username, room });
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                socket.emit('stopTyping', { room });
+            }, 2000);
+        });
+
+        // Show typing indicator when another user is typing
+        socket.on('userTyping', (data) => {
+            typingIndicator.innerText = `${data.username} is typing...`;
+        });
+
+        socket.on('userStoppedTyping', () => {
+            typingIndicator.innerText = "";
+        });
+
+        document.getElementById('chatForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const message = document.getElementById('message').value;
+            socket.emit('chatMessage', { message, username, room });
+            document.getElementById('message').value = "";
+        });
+
+        socket.on('message', (data) => {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<p><strong>${data.username}:</strong> ${data.message}</p>`;
+        });
+
+        function leaveRoom() {
+            localStorage.removeItem('room');
+            window.location.href = "/join.html";
+        }
+
+        // Logout button functionality
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.clear();
+            window.location.href = "/login.html";
+        });
+
+    </script>
+</body>
+</html>
